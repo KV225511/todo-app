@@ -6,6 +6,10 @@ import java.util.Scanner;
 
 public class TodoManager {
     private List<String> tasks = new ArrayList<>();
+    public List<String> getTasks() {
+    return new ArrayList<>(tasks);
+}
+
 
     public void addTask(String task) {
         if (task == null || task.trim().isEmpty()) {
