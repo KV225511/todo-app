@@ -8,33 +8,49 @@ import java.util.List;
 public class TodoManagerTest {
 
     @Test
-    void testAddTask() {
+    void testAddValidTask() {
         TodoManager manager = new TodoManager();
-        manager.addTask("Learn Docker");
-        assertEquals(1, manager.countTasks());
-        assertTrue(manager.getTasks().contains("Learn Docker"));
+        manager.addTask("Buy milk");
+        assertEquals(1, manager.getTasks().size());
+        assertTrue(manager.getTasks().contains("Buy milk"));
     }
 
     @Test
-    void testRemoveTask() {
+    void testAddEmptyTaskThrowsException() {
         TodoManager manager = new TodoManager();
-        manager.addTask("Clean desk");
-        assertTrue(manager.removeTask("Clean desk"));
-        assertEquals(0, manager.countTasks());
+        assertThrows(IllegalArgumentException.class, () -> manager.addTask(""));
+        assertThrows(IllegalArgumentException.class, () -> manager.addTask("   "));
+        assertThrows(IllegalArgumentException.class, () -> manager.addTask(null));
     }
 
     @Test
-    void testEmptyTaskThrowsException() {
+    void testRemoveExistingTask() {
         TodoManager manager = new TodoManager();
-        assertThrows(IllegalArgumentException.class, () -> manager.addTask("  "));
+        manager.addTask("Finish project");
+        boolean result = manager.removeTask("Finish project");
+        assertTrue(result);
+        assertEquals(0, manager.getTasks().size());
+    }
+
+    @Test
+    void testRemoveNonexistentTask() {
+        TodoManager manager = new TodoManager();
+        manager.addTask("Learn Kubernetes");
+        boolean result = manager.removeTask("Go jogging");
+        assertFalse(result);
+        assertEquals(1, manager.getTasks().size());
     }
 
     @Test
     void testGetTasksReturnsCopy() {
         TodoManager manager = new TodoManager();
-        manager.addTask("Refactor code");
-        List<String> tasks = manager.getTasks();
-        tasks.clear();
-        assertEquals(1, manager.countTasks());  // internal list is safe
+        manager.addTask("Study DevOps");
+
+        List<String> copy = manager.getTasks();
+        copy.clear();  // modify the copy
+
+        // Original list should remain unchanged
+        assertEquals(1, manager.getTasks().size());
     }
 }
+
