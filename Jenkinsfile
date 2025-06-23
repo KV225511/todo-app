@@ -18,24 +18,26 @@ pipeline {
 
         stage('Build with Maven') {
             steps {
+                echo "🔧 Building the project..."
                 sh 'mvn clean package -Dmaven.compiler.source=17 -Dmaven.compiler.target=17'
             }
         }
 
-        stage('Run Application') {
+        stage('Run CLI App with Simulated Input') {
             steps {
-                echo " Running the compiled Java application..."
-                sh 'java -jar $JAR_NAME || true'
+                echo "🧪 Running TodoManager with input.txt..."
+                sh 'java -jar $JAR_NAME < input.txt || true'
             }
         }
 
-        stage('Run Tests (JUnit)') {
+        stage('Run Unit Tests') {
             steps {
+                echo "🧪 Running JUnit tests..."
                 sh 'mvn test'
             }
         }
 
-        stage('Publish Test Results') {
+        stage('Publish JUnit Test Results') {
             steps {
                 junit '**/target/surefire-reports/*.xml'
             }
@@ -44,10 +46,10 @@ pipeline {
 
     post {
         success {
-            echo " Pipeline completed successfully!"
+            echo ' Pipeline completed successfully!'
         }
         failure {
-            echo " Something went wrong. Check logs above."
+            echo ' Pipeline failed. Check the logs above.'
         }
     }
 }
