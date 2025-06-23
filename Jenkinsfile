@@ -10,11 +10,6 @@ pipeline {
     }
 
     stages {
-        stage('Clone Repository') {
-            steps {
-                git 'https://github.com/KV225511/todo-app.git'
-            }
-        }
 
         stage('Build with Maven') {
             steps {
