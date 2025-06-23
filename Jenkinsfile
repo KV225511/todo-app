@@ -1,15 +1,21 @@
 pipeline {
     agent any
 
-    environment {
-        IMAGE_NAME = "todo-app:1.0"
-    }
-
     tools {
         maven 'Maven 3'
     }
 
+    environment {
+        IMAGE_NAME = "todo-app:1.0"
+        JAR_NAME = "target/todo-app-1.0-SNAPSHOT.jar"
+    }
+
     stages {
+        stage('Checkout Code') {
+            steps {
+                checkout scm
+            }
+        }
 
         stage('Build with Maven') {
             steps {
@@ -17,9 +23,20 @@ pipeline {
             }
         }
 
+        stage('Run CLI App (console output)') {
+            steps {
+                echo "Running your program..."
+                sh 'java -jar $JAR_NAME < input.txt || true'
+            }
+        }
+
         stage('Build Docker Image') {
             steps {
-                sh 'eval $(minikube docker-env) && docker build -t $IMAGE_NAME .'
+                sh '''
+                    echo "[INFO] Switching Docker to Minikube..."
+                    eval $(minikube docker-env) && \
+                    docker build -t $IMAGE_NAME .
+                '''
             }
         }
 
@@ -28,5 +45,22 @@ pipeline {
                 sh 'kubectl apply -f k8s-deployment.yaml'
             }
         }
+
+        stage('Check Deployment') {
+            steps {
+                sh 'kubectl get pods'
+                sh 'kubectl logs deployment/todo-app-deployment || true'
+            }
+        }
+    }
+
+    post {
+        success {
+            echo " Pipeline completed successfully."
+        }
+        failure {
+            echo " Pipeline failed."
+        }
     }
 }
+
