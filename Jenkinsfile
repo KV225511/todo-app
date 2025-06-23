@@ -6,7 +6,6 @@ pipeline {
     }
 
     environment {
-        IMAGE_NAME = "todo-app:1.0"
         JAR_NAME = "target/todo-app-1.0-SNAPSHOT.jar"
     }
 
@@ -23,43 +22,32 @@ pipeline {
             }
         }
 
-        stage('Run CLI App (console output)') {
+        stage('Run Application') {
             steps {
-                echo "Running your program..."
-                sh 'java -jar $JAR_NAME < input.txt || true'
+                echo " Running the compiled Java application..."
+                sh 'java -jar $JAR_NAME || true'
             }
         }
 
-        stage('Build Docker Image') {
+        stage('Run Tests (JUnit)') {
             steps {
-                sh '''
-                    echo "[INFO] Switching Docker to Minikube..."
-                    eval $(minikube docker-env) && \
-                    docker build -t $IMAGE_NAME .
-                '''
+                sh 'mvn test'
             }
         }
 
-        stage('Deploy to Minikube') {
+        stage('Publish Test Results') {
             steps {
-                sh 'kubectl apply -f k8s-deployment.yaml'
-            }
-        }
-
-        stage('Check Deployment') {
-            steps {
-                sh 'kubectl get pods'
-                sh 'kubectl logs deployment/todo-app-deployment || true'
+                junit '**/target/surefire-reports/*.xml'
             }
         }
     }
 
     post {
         success {
-            echo " Pipeline completed successfully."
+            echo " Pipeline completed successfully!"
         }
         failure {
-            echo " Pipeline failed."
+            echo " Something went wrong. Check logs above."
         }
     }
 }
